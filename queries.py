@@ -1,11 +1,11 @@
 order_query = """
     query OrdersQuery($cursor: String)   {
-        orders(first: 1000, after: $cursor) {
+        orders(first: 1, after: $cursor) {
             edges {
                 node {
                     id
                     name
-                    email
+                    
                     displayFinancialStatus
                     displayFulfillmentStatus
                     customerAcceptsMarketing
@@ -14,6 +14,12 @@ order_query = """
                     discountCode
                     note
                     phone
+                    subtotalLineItemsQuantity
+                    tags
+                    
+                    customer {
+                        displayName
+                    }
                     
                     app {
                         id
@@ -33,18 +39,7 @@ order_query = """
                     shippingLine {
                         price
                         code
-                    }
-                    
-
-                    
-                    lineItems {
-                        edges {
-                            node {
-                                name
-                                quantity
-                                
-                            }
-                        }
+                        title
                     }
                     
                     billingAddress {
@@ -60,8 +55,8 @@ order_query = """
                     channelInformation {
                         channelId
                         channelDefinition {
-                        handle
-                        channelName
+                            handle
+                            channelName
                         }
                     }
                     
@@ -81,6 +76,46 @@ order_query = """
                 hasNextPage
                 endCursor
             }
+          }
+        }
+
+"""
+
+product_query = """
+query ProductsQuery($cursor: String) {
+    inventoryItems(first: 1, after: $cursor) {
+        edges {
+            node {
+                id
+                sku
+                variant {
+                    id
+                    displayName
+                    image {
+                        url
+                    }
+                    inventoryQuantity
+                    inventoryItem {
+                        id
+                    }
+                }
+                inventoryLevels(first: 1) {
+                    edges {
+                        node {
+                            id
+       											quantities(names: ["available", "on_hand", "committed", "quality_control"]){
+                            	name
+                            	quantity
+                          }
+                        }
+                    }
+                }
+            }
+        }
+        pageInfo {
+            hasNextPage
+            endCursor
         }
     }
+}
 """

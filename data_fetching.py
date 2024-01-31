@@ -1,22 +1,25 @@
 import json
+import os
 import shopify
 import urllib.request
 import shopify #https://github.com/Shopify/shopify_python_api
 from constants import BULK_OPERATION_COMPLETED, BULK_OPERATION_RUNNING
+from queries import product_query
 
 def shopify_client(shop_url, api_version, private_app_password):
     api_session = shopify.Session(shop_url, api_version, private_app_password)
     shopify.ShopifyResource.activate_session(api_session)
     client = shopify.GraphQL()
     return client
+
 def bulk_operation(query):
     try:
         if not isinstance(query, str):
             return f"Please replace {query} into String Datatype"
-        bulk_operation_query = f"""
+        bulk_operation_query = """
         mutation {{
             bulkOperationRunQuery(
-                query: "{query}"
+                query: \"""{query}\"""
             ) {{
                 bulkOperation {{
                     id
@@ -28,7 +31,7 @@ def bulk_operation(query):
                 }}
             }}
         }}
-        """
+        """.format(query=query)
         return bulk_operation_query
     except Exception as e:
         return str(e)
@@ -72,10 +75,11 @@ def bulk_status(client, bulk):
         return str(e)
 
 def get_bulk_data(bulk_status):
-    try:        
+    try:
+        orders = []
+
         if "data" in bulk_status and "node" in bulk_status["data"] \
         and "status" in bulk_status["data"]["node"]:
-            orders = []
             if bulk_status['data']['node']['status'] == BULK_OPERATION_COMPLETED: 
                 url = bulk_status['data']['node']['url']
                 order_data = urllib.request.urlopen(url)
@@ -84,6 +88,7 @@ def get_bulk_data(bulk_status):
                     if 'id' in l:
                         orders.append(l)
 
-            return orders or []
+        return orders or []
+    
     except Exception as e:
         return str(e)
